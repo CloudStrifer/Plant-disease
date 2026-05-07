@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plant-disease"
+version = "0.1.0"
+description = "Plant disease multi-task research prototype"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+  "torch",
+  "torchvision",
+  "mmengine",
+  "mmsegmentation",
+  "timm",
+  "albumentations",
+  "opencv-python",
+  "numpy",
+  "pandas",
+  "scikit-learn",
+  "pytorch-grad-cam",
+  "segment-anything",
+  "pyyaml",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
