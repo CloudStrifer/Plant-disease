@@ -1,0 +1,7 @@
+experiment_name: baseline_segformer_b0
+backbone: segformer_b0
+num_classes: 4
+num_severity_grades: 3
+batch_size: 8
+lr: 0.0001
+epochs: 30
