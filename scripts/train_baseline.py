@@ -14,6 +14,7 @@ if str(SRC) not in sys.path:
 
 from plant_disease.data.dataset import PlantDiseaseDataset
 from plant_disease.data.manifest import load_manifest
+from plant_disease.data.transforms import build_eval_transform, build_train_transform
 from plant_disease.models.multitask_model import MultiTaskPlantDiseaseModel
 from plant_disease.training.engine import evaluate_one_epoch, train_one_epoch
 from plant_disease.training.losses import compute_multitask_loss
@@ -63,8 +64,9 @@ def main():
     train_df = select_split(df, "train")
     val_df = select_split(df, "val")
 
-    train_ds = PlantDiseaseDataset(train_df, transform=None)
-    val_ds = PlantDiseaseDataset(val_df, transform=None)
+    image_size = int(config.get("image_size", 256))
+    train_ds = PlantDiseaseDataset(train_df, transform=build_train_transform(image_size=image_size))
+    val_ds = PlantDiseaseDataset(val_df, transform=build_eval_transform(image_size=image_size))
     train_loader = DataLoader(train_ds, batch_size=config.get("batch_size", 4), shuffle=True, num_workers=config.get("num_workers", 0))
     val_loader = DataLoader(val_ds, batch_size=config.get("batch_size", 4), shuffle=False, num_workers=config.get("num_workers", 0))
 
