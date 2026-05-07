@@ -65,3 +65,40 @@ def build_segmentation_manifest(
             }
         )
     return pd.DataFrame(rows)
+
+
+def build_plantseg_manifest(root: str | Path):
+    root = Path(root)
+    metadata_path = root / "Metadatav2.csv"
+    metadata = pd.read_csv(metadata_path)
+    split_map = {
+        "Training": "train",
+        "Validation": "val",
+        "Test": "test",
+    }
+
+    class_names = []
+    for _, row in metadata.iterrows():
+        class_names.append(f"{row['Plant']}___{row['Disease']}")
+    class_to_idx = {name: idx for idx, name in enumerate(sorted(set(class_names)))}
+
+    rows = []
+    for _, row in metadata.iterrows():
+        split = split_map[row["Split"]]
+        class_name = f"{row['Plant']}___{row['Disease']}"
+        image_path = root / "images" / split / row["Name"]
+        mask_path = root / "annotations" / split / row["Label file"]
+        rows.append(
+            {
+                "image_path": str(image_path),
+                "class_id": class_to_idx[class_name],
+                "class_name": class_name,
+                "has_lesion_mask": mask_path.exists(),
+                "has_leaf_mask": False,
+                "source_dataset": "PlantSeg",
+                "severity_label": 0,
+                "split": split,
+                "lesion_mask_path": str(mask_path),
+            }
+        )
+    return pd.DataFrame(rows), class_to_idx

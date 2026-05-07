@@ -21,7 +21,7 @@ Use later as an external generalization benchmark for field robustness rather th
 ### PlantVillage manifest
 
 ```bash
-python scripts/prepare_plantvillage.py --root <PLANTVILLAGE_CLASS_DIR> --output data/manifests/plantvillage.csv
+python scripts/prepare_plantvillage.py --root "E:\Multi_modal_Code\Plant disease\src\plant_disease\dataset\plantvillage\color" --output data/manifests/plantvillage.csv
 ```
 
 Expected input layout:
@@ -36,15 +36,22 @@ Expected input layout:
 ### Segmentation manifest for PlantSeg-style paired folders
 
 ```bash
-python scripts/prepare_segmentation_manifest.py ^
-  --image-dir <IMAGE_DIR> ^
-  --mask-dir <MASK_DIR> ^
-  --class-name Tomato___Leaf_Mold ^
-  --class-id 4 ^
-  --source-dataset PlantSeg ^
-  --split train ^
-  --output data/manifests/plantseg_train.csv
+python scripts/prepare_plantseg.py --root "E:\Multi_modal_Code\Plant disease\src\plant_disease\dataset\plantseg" --output data/manifests/plantseg.csv
 ```
+
+This script reads:
+
+- `images/train`, `images/val`, `images/test`
+- `annotations/train`, `annotations/val`, `annotations/test`
+- `Metadatav2.csv`
+
+and generates one unified manifest with `split` values already assigned.
+
+## Recommended Training Order
+
+1. Train the first baseline on `PlantSeg` only
+2. Use `PlantVillage` later for classification pretraining or weak supervision
+3. Use `PlantDoc` later as an external robustness benchmark
 
 ## Train Baseline
 
