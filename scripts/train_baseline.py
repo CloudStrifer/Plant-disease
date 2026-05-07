@@ -73,15 +73,39 @@ def main():
     device = config.get("device", "cuda" if torch.cuda.is_available() else "cpu")
     model = build_model(df, config).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.get("lr", 1e-4))
+    log_interval = int(config.get("log_interval", 10))
 
     output_dir = resolve_runtime_path(config.get("save_dir", "artifacts/baseline"), config_path=config_path, repo_root=ROOT)
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    print(f"experiment={config.get('experiment_name', 'baseline')}", flush=True)
+    print(f"config={config_path}", flush=True)
+    print(f"manifest={manifest_path}", flush=True)
+    print(f"device={device} image_size={image_size} batch_size={config.get('batch_size', 4)}", flush=True)
+    print(f"train_samples={len(train_ds)} val_samples={len(val_ds)}", flush=True)
+    print(f"output_dir={output_dir}", flush=True)
+
     epochs = int(config.get("epochs", 1))
     for epoch in range(epochs):
-        train_loss = train_one_epoch(model, train_loader, optimizer, compute_multitask_loss, device=device)
-        val_loss = evaluate_one_epoch(model, val_loader, compute_multitask_loss, device=device)
-        print(f"epoch={epoch + 1} train_loss={train_loss:.4f} val_loss={val_loss:.4f}")
+        print(f"epoch={epoch + 1}/{epochs} start", flush=True)
+        train_loss = train_one_epoch(
+            model,
+            train_loader,
+            optimizer,
+            compute_multitask_loss,
+            device=device,
+            log_interval=log_interval,
+            log_prefix="train",
+        )
+        val_loss = evaluate_one_epoch(
+            model,
+            val_loader,
+            compute_multitask_loss,
+            device=device,
+            log_interval=log_interval,
+            log_prefix="val",
+        )
+        print(f"epoch={epoch + 1} train_loss={train_loss:.4f} val_loss={val_loss:.4f}", flush=True)
 
     torch.save(model.state_dict(), output_dir / "baseline_last.pt")
     print(f"Saved checkpoint to {output_dir / 'baseline_last.pt'}")
