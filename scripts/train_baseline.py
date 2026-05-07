@@ -19,6 +19,18 @@ from plant_disease.training.engine import evaluate_one_epoch, train_one_epoch
 from plant_disease.training.losses import compute_multitask_loss
 
 
+def resolve_runtime_path(value: str, config_path: Path, repo_root: Path) -> Path:
+    path = Path(value)
+    if path.is_absolute():
+        return path
+
+    repo_candidate = repo_root / path
+    if repo_candidate.exists() or len(path.parts) > 1:
+        return repo_candidate
+
+    return (config_path.parent / path).resolve()
+
+
 def select_split(df: pd.DataFrame, split_name: str) -> pd.DataFrame:
     if "split" not in df.columns:
         return df.copy()
@@ -42,9 +54,11 @@ def main():
     parser.add_argument("--config", default="configs/baseline_segformer_b0.yaml")
     args = parser.parse_args()
 
-    with open(args.config, "r", encoding="utf-8") as fh:
+    config_path = resolve_runtime_path(args.config, config_path=ROOT / "configs" / "baseline_segformer_b0.yaml", repo_root=ROOT)
+
+    with open(config_path, "r", encoding="utf-8") as fh:
         config = yaml.safe_load(fh)
-    manifest_path = config["train_manifest"]
+    manifest_path = resolve_runtime_path(config["train_manifest"], config_path=config_path, repo_root=ROOT)
     df = load_manifest(manifest_path)
     train_df = select_split(df, "train")
     val_df = select_split(df, "val")
@@ -58,7 +72,7 @@ def main():
     model = build_model(df, config).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.get("lr", 1e-4))
 
-    output_dir = Path(config.get("save_dir", "artifacts/baseline"))
+    output_dir = resolve_runtime_path(config.get("save_dir", "artifacts/baseline"), config_path=config_path, repo_root=ROOT)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     epochs = int(config.get("epochs", 1))
