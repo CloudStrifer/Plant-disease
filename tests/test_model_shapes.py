@@ -1,5 +1,6 @@
 import torch
 
+from plant_disease.models.lesion_guided import lesion_guided_pool
 from plant_disease.models.multitask_model import MultiTaskPlantDiseaseModel
 
 
@@ -15,3 +16,11 @@ def test_multitask_model_outputs_expected_shapes():
     assert outputs["segmentation_logits"].shape == (2, 1, 16, 16)
     assert outputs["classification_logits"].shape == (2, 4)
     assert outputs["severity_logits"].shape == (2, 3)
+
+
+def test_lesion_guided_pool_reduces_spatial_dimensions():
+    features = torch.ones((2, 4, 8, 8))
+    mask = torch.ones((2, 1, 8, 8))
+    fused = lesion_guided_pool(features, mask)
+
+    assert fused.shape == (2, 8)

@@ -1,0 +1,3 @@
+experiment_name: lesion_guided_segformer_b0
+base_config: baseline_segformer_b0
+use_lesion_guided_fusion: true
