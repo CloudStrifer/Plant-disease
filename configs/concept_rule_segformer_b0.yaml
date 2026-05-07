@@ -1,0 +1,4 @@
+experiment_name: concept_rule_segformer_b0
+base_config: pseudo_label_segformer_b0
+use_concept_head: true
+rule_weight: 0.2

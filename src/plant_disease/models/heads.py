@@ -17,3 +17,12 @@ class SeverityHead(nn.Module):
 
     def forward(self, x):
         return self.fc(x)
+
+
+class ConceptHead(nn.Module):
+    def __init__(self, in_features: int, num_concepts: int):
+        super().__init__()
+        self.fc = nn.Linear(in_features, num_concepts)
+
+    def forward(self, x):
+        return self.fc(x)
