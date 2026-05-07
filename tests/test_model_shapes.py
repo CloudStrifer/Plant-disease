@@ -24,3 +24,18 @@ def test_lesion_guided_pool_reduces_spatial_dimensions():
     fused = lesion_guided_pool(features, mask)
 
     assert fused.shape == (2, 8)
+
+
+def test_multitask_model_forward_accepts_images():
+    model = MultiTaskPlantDiseaseModel(
+        in_channels=512,
+        num_classes=4,
+        num_severity_grades=3,
+        backbone_name="resnet18",
+    )
+    x = torch.randn(2, 3, 64, 64)
+    outputs = model(x)
+
+    assert outputs["segmentation_logits"].shape == (2, 1, 64, 64)
+    assert outputs["classification_logits"].shape == (2, 4)
+    assert outputs["severity_logits"].shape == (2, 3)

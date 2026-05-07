@@ -1,0 +1,10 @@
+__pycache__/
+.pytest_cache/
+.idea/
+artifacts/
+*.pyc
+*.pyo
+*.pyd
+*.pt
+*.pth
+*.ckpt
