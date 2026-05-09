@@ -13,9 +13,12 @@ REQUIRED_COLUMNS = {
 
 
 def load_manifest(csv_path: str | Path) -> pd.DataFrame:
+    csv_path = Path(csv_path)
     df = pd.read_csv(csv_path)
     missing = REQUIRED_COLUMNS.difference(df.columns)
     if missing:
         missing_text = ", ".join(sorted(missing))
         raise ValueError(f"missing required columns: {missing_text}")
-    return df.copy()
+    df = df.copy()
+    df["__manifest_dir"] = str(csv_path.resolve().parent)
+    return df

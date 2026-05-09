@@ -7,7 +7,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from plant_disease.data.builders import build_segmentation_manifest
+from src.plant_disease.data.builders import build_segmentation_manifest
 
 
 def main():

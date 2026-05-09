@@ -9,7 +9,7 @@ if str(SRC) not in sys.path:
 
 import pandas as pd
 
-from plant_disease.data.builders import build_plantseg_manifest
+from src.plant_disease.data.builders import build_plantseg_manifest
 
 
 def main():

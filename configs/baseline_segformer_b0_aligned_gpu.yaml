@@ -1,0 +1,15 @@
+experiment_name: baseline_segformer_b0_aligned_gpu
+train_manifest: artifacts/aligned_subsets/plantseg_vs_plantvillage_pseudo/left_aligned_manifest.csv
+backbone_name: segformer_b0
+fusion_mode: lesion_guided
+image_size: 256
+batch_size: 64
+num_workers: 0
+log_interval: 10
+learning_rate: 0.0001
+epochs: 5
+seg_weight: 1.0
+sev_weight: 1.0
+num_severity_grades: 4
+device: cuda
+save_dir: artifacts/baseline_segformer_b0_aligned_gpu

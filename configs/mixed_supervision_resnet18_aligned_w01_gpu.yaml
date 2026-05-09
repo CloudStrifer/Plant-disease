@@ -1,0 +1,16 @@
+experiment_name: mixed_supervision_resnet18_aligned_w01_gpu
+train_manifest: artifacts/aligned_subsets/plantseg_vs_plantvillage_pseudo/mixed_aligned_manifest_w01.csv
+backbone_name: resnet18
+fusion_mode: lesion_guided
+image_size: 256
+batch_size: 64
+num_workers: 0
+log_interval: 10
+learning_rate: 0.0001
+epochs: 5
+seg_weight: 1.0
+sev_weight: 1.0
+num_severity_grades: 4
+device: cuda
+save_dir: artifacts/mixed_supervision_resnet18_aligned_w01_gpu
+init_checkpoint: artifacts/plantvillage_cls_gpu/baseline_last.pt

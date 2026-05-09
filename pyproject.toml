@@ -11,6 +11,7 @@ requires-python = ">=3.13"
 dependencies = [
   "torch",
   "torchvision",
+  "transformers",
   "mmengine",
   "mmsegmentation",
   "timm",
@@ -28,5 +29,5 @@ dependencies = [
 where = ["src"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = [".", "src"]
 testpaths = ["tests"]

@@ -2,15 +2,61 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import cv2
 import pandas as pd
 
 IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
+DEFAULT_SEVERITY_THRESHOLDS = (0.01, 0.05, 0.20)
 
 
 def _iter_images(root: Path):
     for path in sorted(root.rglob("*")):
         if path.is_file() and path.suffix.lower() in IMAGE_SUFFIXES:
             yield path
+
+
+def compute_mask_severity_ratio(mask_path: str | Path) -> float:
+    mask = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
+    if mask is None:
+        raise FileNotFoundError(f"Failed to read mask for severity: {mask_path}")
+    total_pixels = float(mask.shape[0] * mask.shape[1])
+    if total_pixels <= 0:
+        return 0.0
+    lesion_pixels = float((mask > 0).sum())
+    return lesion_pixels / total_pixels
+
+
+def severity_label_from_ratio(ratio: float, thresholds: tuple[float, float, float] = DEFAULT_SEVERITY_THRESHOLDS) -> int:
+    low, medium, high = thresholds
+    if ratio < low:
+        return 0
+    if ratio < medium:
+        return 1
+    if ratio < high:
+        return 2
+    return 3
+
+
+def annotate_severity_columns(
+    dataframe: pd.DataFrame,
+    thresholds: tuple[float, float, float] = DEFAULT_SEVERITY_THRESHOLDS,
+) -> pd.DataFrame:
+    rows = []
+    for _, row in dataframe.iterrows():
+        record = row.to_dict()
+        has_mask = bool(record.get("has_lesion_mask", False))
+        mask_path = record.get("lesion_mask_path")
+        if has_mask and mask_path:
+            ratio = compute_mask_severity_ratio(mask_path)
+            record["severity_ratio"] = ratio
+            record["severity_label"] = severity_label_from_ratio(ratio, thresholds=thresholds)
+            record["has_valid_severity"] = True
+        else:
+            record["severity_ratio"] = -1.0
+            record["severity_label"] = -1
+            record["has_valid_severity"] = False
+        rows.append(record)
+    return pd.DataFrame(rows)
 
 
 def build_classification_manifest(root: str | Path, source_dataset: str, split: str = "train"):
@@ -29,7 +75,9 @@ def build_classification_manifest(root: str | Path, source_dataset: str, split: 
                     "has_lesion_mask": False,
                     "has_leaf_mask": False,
                     "source_dataset": source_dataset,
-                    "severity_label": 0,
+                    "severity_label": -1,
+                    "severity_ratio": -1.0,
+                    "has_valid_severity": False,
                     "split": split,
                 }
             )
@@ -59,12 +107,11 @@ def build_segmentation_manifest(
                 "has_lesion_mask": True,
                 "has_leaf_mask": False,
                 "source_dataset": source_dataset,
-                "severity_label": 0,
                 "split": split,
                 "lesion_mask_path": str(mask_path),
             }
         )
-    return pd.DataFrame(rows)
+    return annotate_severity_columns(pd.DataFrame(rows))
 
 
 def build_plantseg_manifest(root: str | Path):
@@ -96,9 +143,18 @@ def build_plantseg_manifest(root: str | Path):
                 "has_lesion_mask": mask_path.exists(),
                 "has_leaf_mask": False,
                 "source_dataset": "PlantSeg",
-                "severity_label": 0,
                 "split": split,
                 "lesion_mask_path": str(mask_path),
             }
         )
-    return pd.DataFrame(rows), class_to_idx
+    return annotate_severity_columns(pd.DataFrame(rows)), class_to_idx
+
+
+def build_mixed_manifest(real_manifest_csv: str | Path, pseudo_manifest_csv: str | Path) -> pd.DataFrame:
+    real_df = pd.read_csv(real_manifest_csv)
+    pseudo_df = pd.read_csv(pseudo_manifest_csv)
+    if "pseudo_label" not in real_df.columns:
+        real_df["pseudo_label"] = False
+    pseudo_df["pseudo_label"] = True
+    combined = pd.concat([real_df, pseudo_df], ignore_index=True)
+    return combined

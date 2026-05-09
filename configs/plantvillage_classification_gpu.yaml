@@ -1,0 +1,15 @@
+experiment_name: plantvillage_classification_gpu
+backbone_name: resnet18
+fusion_mode: global
+train_manifest: data/manifests/plantvillage.csv
+image_size: 224
+batch_size: 64
+num_workers: 0
+log_interval: 20
+lr: 0.0001
+epochs: 3
+seg_weight: 0.0
+sev_weight: 0.0
+num_severity_grades: 4
+device: cuda
+save_dir: artifacts/plantvillage_cls_gpu

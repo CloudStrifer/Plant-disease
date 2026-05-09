@@ -39,3 +39,33 @@ def test_multitask_model_forward_accepts_images():
     assert outputs["segmentation_logits"].shape == (2, 1, 64, 64)
     assert outputs["classification_logits"].shape == (2, 4)
     assert outputs["severity_logits"].shape == (2, 3)
+
+
+def test_multitask_model_forward_supports_segformer_b0():
+    model = MultiTaskPlantDiseaseModel(
+        in_channels=256,
+        num_classes=4,
+        num_severity_grades=3,
+        backbone_name="segformer_b0",
+    )
+    x = torch.randn(2, 3, 64, 64)
+    outputs = model(x)
+
+    assert outputs["segmentation_logits"].shape == (2, 1, 64, 64)
+    assert outputs["classification_logits"].shape == (2, 4)
+    assert outputs["severity_logits"].shape == (2, 3)
+
+
+def test_multitask_model_segformer_b0_can_emit_concept_logits():
+    model = MultiTaskPlantDiseaseModel(
+        in_channels=256,
+        num_classes=4,
+        num_severity_grades=3,
+        backbone_name="segformer_b0",
+        use_concept_head=True,
+        num_concepts=4,
+    )
+    x = torch.randn(2, 3, 64, 64)
+    outputs = model(x)
+
+    assert outputs["concept_logits"].shape == (2, 4)

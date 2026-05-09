@@ -1,0 +1,16 @@
+experiment_name: mixed_supervision_pseudo_weight_03_gpu
+train_manifest: data/manifests/plantseg_plantvillage_pseudo_w03.csv
+backbone_name: resnet18
+batch_size: 128
+epochs: 5
+learning_rate: 0.001
+device: cuda
+num_workers: 4
+image_size: 256
+log_interval: 20
+save_dir: artifacts/mixed_supervision_pseudo_weight_03_gpu
+fusion_mode: lesion_guided
+seg_weight: 1.0
+sev_weight: 1.0
+num_severity_grades: 4
+init_checkpoint: artifacts/plantvillage_cls_gpu/baseline_last.pt
